@@ -1,0 +1,140 @@
+#VRML V2.0 utf8
+
+# The following EXTERNPROTO definitins remain the same for all FVRML scenes.
+
+EXTERNPROTO FGeometry [
+	exposedField SFString definition
+	exposedField MFFloat parameters
+	exposedField MFInt32 resolution
+	exposedField SFVec3f bboxCenter
+	exposedField SFVec3f bboxSize
+	exposedField SFString type
+	exposedField MFNode	parents
+	exposedField SFVec2f timeSpan
+] "http://www3.ntu.edu.sg/home/assourin/FVRML/FVRML.wrl#FGeometry"
+EXTERNPROTO FMaterial [
+	exposedField SFString diffuseColor
+	exposedField SFString type
+	exposedField MFColor patternColor
+	exposedField MFFloat patternKey
+	exposedField SFString ambientIntensity
+	exposedField SFString emissiveColor
+	exposedField SFString shininess
+	exposedField SFString specularColor
+	exposedField SFString transparency
+	exposedField MFFloat parameters
+	exposedField MFNode	parents
+	exposedField SFVec2f timeSpan
+] "http://www3.ntu.edu.sg/home/assourin/FVRML/FVRML.wrl#FMaterial"
+EXTERNPROTO FTexture3D [
+	exposedField SFString definition
+	exposedField SFString type
+	exposedField MFFloat parameters
+	exposedField MFNode	parents
+	exposedField SFVec2f timeSpan
+] "http://www3.ntu.edu.sg/home/assourin/FVRML/FVRML.wrl#FTexture3D"
+EXTERNPROTO FAppearance [
+	exposedField SFNode	material
+	exposedField SFNode	texture
+	exposedField SFNode	textureTransform
+	exposedField SFNode	texture3D
+	exposedField MFNode	parents
+	eventIn	SFBool refresh
+] "http://www3.ntu.edu.sg/home/assourin/FVRML/FVRML.wrl#FAppearance"
+EXTERNPROTO FShape [
+	exposedField SFNode	geometry
+	exposedField SFNode	appearance
+	exposedField SFString polygonizer
+	exposedField MFNode	parents
+	exposedField SFTime	startTime
+	exposedField SFTime stopTime
+    exposedField SFTime cycleInterval
+    exposedField SFBool	loop
+	exposedField SFBool	enabled
+	eventOut SFTime	cycleTime
+	eventIn SFFloat set_fraction
+	field SFInt32 frames
+] "http://www3.ntu.edu.sg/home/assourin/FVRML/FVRML.wrl#FShape"
+EXTERNPROTO FTransform [
+	exposedField SFString operation
+	exposedField SFString type
+	exposedField SFString polygonizer
+	exposedField MFFloat parameters
+	exposedField SFString center
+	exposedField SFString rotation
+	exposedField SFString scale
+	exposedField SFString scaleOrientation
+	exposedField SFString translation
+	exposedField MFNode children
+	exposedField MFNode	parents
+	eventIn	SFBool refresh
+    exposedField SFVec2f timeSpan
+	exposedField SFTime	startTime
+	exposedField SFTime stopTime
+    exposedField SFTime cycleInterval
+    exposedField SFBool	loop
+	exposedField SFBool	enabled
+	eventOut SFTime	cycleTime
+	eventIn SFFloat set_fraction
+	field SFInt32 frames
+] "http://www3.ntu.edu.sg/home/assourin/FVRML/FVRML.wrl#FTransform"
+
+Background {skyColor 0.1 0.1 0.1}
+
+# External VRML object "coordinate system" is included in the scene
+Inline {url "http://www3.ntu.edu.sg/home/assourin/FVRML/CoordinateAxes.wrl"}
+
+
+FShape {
+geometry FGeometry {
+
+# Function script defining the CSG solid. 
+# Change to some other formulae to see how the solid geometry changes 
+# based on the parameters domain and the sampling resolution defined below
+	definition "function frep(x,y,z,t){
+	cone=((y-0.5)*0.5)^2-(x)^2-(z)^2;
+	ellip=1-x^2/0.4^2-(y-0.6)^2/0.2^2-z^2/0.3^2;
+	cone1=(z*0.5)^2-(x)^2-(y+0.7)^2;
+	cyl=0.3^2-x^2-z^2;
+	zb=z;
+	zb1=0.3-z;
+	b0=1+x/0.9+y/0.8+z/0.9;
+	b1=0.5-y;
+	b2=-0.3-y;
+	b3=y+0.95;
+	b4=y+0.3;
+	f0=min(b2,cyl);
+	f01=min(b3,f0);
+	f1=min(b1,cone);
+	f11=min(f1,b4);
+	f2=min(zb,cone1);
+	f21=min(f2,zb1);
+	final=max(f11, ellip);
+	final_b=min(b2,-final);
+	final_c=max(final,f01);
+	final_d=min(final_c,-f21);
+	final_e=min(final_d,b0);
+	return final_e;}"
+
+# Adjust the tight bounding box and an optimal resolution
+bboxCenter 0 0 0
+bboxSize 0.8 1.9 0.8
+resolution [150 150 150]
+
+ }  
+
+
+appearance FAppearance {
+material FMaterial { 
+# Variable color is defined for the CGS solid
+diffuseColor "r=abs(sin(4*pi*abs(u)));g=abs(sin(4*pi*abs(v)));b=abs(sin(4*pi*abs(w)));"
+   }    }
+}
+# Displaying the bounding box with a standard Box object of VRML
+# Size of the bounding box goes to size <x y z> while its centre
+# goes to translation <x y z>
+#Transform {translation 0 0 0 children [
+#	Shape {geometry Box {size 0.8 1.9 0.8}	
+#		   appearance Appearance {material Material 
+#			   {diffuseColor 0 1 1 transparency 0.7}}}
+#	   ]}
